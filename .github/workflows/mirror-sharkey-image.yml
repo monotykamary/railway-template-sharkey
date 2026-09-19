@@ -1,0 +1,49 @@
+name: Mirror pinned Sharkey image to GHCR
+
+# The template's Dockerfile builds from the upstream Sharkey image, which is published only on the
+# project's own Forgejo registry (registry.activitypub.software). Railway's builders stall pulling a
+# 340 MB image from that endpoint, leaving deploys stuck in BUILDING indefinitely, so the pinned image
+# is mirrored to GHCR here and the Dockerfile pulls the mirror instead.
+#
+# crane copy pushes the index bytes unchanged, so the mirrored digest stays identical to the pinned
+# upstream digest. Re-run this workflow whenever the Dockerfile moves to a newer Sharkey release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: Source image reference to mirror (immutable digest please)
+        required: false
+        default: registry.activitypub.software/transfem-org/sharkey:2025.4.7@sha256:8857c9ded749bf6d1aa4f0e54095a0472f9d23a3dc39052c135f2b37881615d9
+      target:
+        description: Destination tag in GHCR
+        required: false
+        default: ghcr.io/monotykamary/sharkey:2025.4.7
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Install crane
+        run: go install github.com/google/go-containerregistry/cmd/crane@v0.20.6
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | "$(go env GOPATH)/bin/crane" auth login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Mirror image
+        run: |
+          set -euo pipefail
+          CRANE="$(go env GOPATH)/bin/crane"
+          "$CRANE" copy '${{ inputs.source }}' '${{ inputs.target }}'
+          echo '--- copied'
+          echo "source digest: $("$CRANE" digest '${{ inputs.source }}')"
+          echo "target digest: $("$CRANE" digest '${{ inputs.target }}')"
+          "$CRANE" manifest '${{ inputs.target }}' | head -c 400
