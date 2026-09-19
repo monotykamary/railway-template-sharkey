@@ -1,4 +1,7 @@
-FROM registry.activitypub.software/transfem-org/sharkey:2025.4.7@sha256:8857c9ded749bf6d1aa4f0e54095a0472f9d23a3dc39052c135f2b37881615d9 AS sharkey
+# The upstream release image is published only on the project's own Forgejo registry, which Railway's
+# builders stall on. .github/workflows/mirror-sharkey-image.yml copies it to GHCR unchanged, so this
+# digest is byte-identical to registry.activitypub.software/transfem-org/sharkey:2025.4.7.
+FROM ghcr.io/monotykamary/sharkey:2025.4.7@sha256:8857c9ded749bf6d1aa4f0e54095a0472f9d23a3dc39052c135f2b37881615d9 AS sharkey
 FROM docker.io/library/node:22.23.2-alpine3.24@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32
 ARG UID=991
 ARG GID=991
