@@ -2,7 +2,7 @@
 # builders stall on. .github/workflows/mirror-sharkey-image.yml copies it to GHCR unchanged, so this
 # digest is byte-identical to registry.activitypub.software/transfem-org/sharkey:2025.4.7.
 FROM ghcr.io/monotykamary/sharkey:2025.4.7@sha256:8857c9ded749bf6d1aa4f0e54095a0472f9d23a3dc39052c135f2b37881615d9 AS sharkey
-FROM docker.io/library/node:22.23.3-alpine3.24@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+FROM docker.io/library/node:22.23.4-alpine3.24@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914
 ARG UID=991
 ARG GID=991
 ENV COREPACK_DEFAULT_TO_LATEST=0 NODE_ENV=production LD_PRELOAD=/usr/lib/libjemalloc.so.2
