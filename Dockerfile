@@ -6,7 +6,7 @@ FROM docker.io/library/node:22.23.5-alpine3.24@sha256:1314fb30ec37592d5845e5a160
 ARG UID=991
 ARG GID=991
 ENV COREPACK_DEFAULT_TO_LATEST=0 NODE_ENV=production LD_PRELOAD=/usr/lib/libjemalloc.so.2
-RUN apk add --no-cache ca-certificates curl ffmpeg tini jemalloc pixman pango cairo libpng librsvg font-noto font-noto-cjk font-noto-thai \
+RUN apk add --no-cache ca-certificates curl ffmpeg tini su-exec jemalloc pixman pango cairo libpng librsvg font-noto font-noto-cjk font-noto-thai \
  && corepack enable \
  && addgroup -g "$GID" sharkey \
  && adduser -D -u "$UID" -G sharkey -h /sharkey sharkey \
@@ -14,10 +14,11 @@ RUN apk add --no-cache ca-certificates curl ffmpeg tini jemalloc pixman pango ca
  && chown -R sharkey:sharkey /sharkey
 COPY --from=sharkey --chown=sharkey:sharkey /sharkey /sharkey
 COPY --chown=sharkey:sharkey entrypoint.sh /sharkey/railway-entrypoint.sh
+COPY --chmod=755 volume-entrypoint.sh /usr/local/bin/sharkey-volume-entrypoint
 RUN chmod +x /sharkey/railway-entrypoint.sh \
  && cd /sharkey \
  && corepack install
-USER sharkey
+USER root
 WORKDIR /sharkey
 EXPOSE 3000
-ENTRYPOINT ["/sharkey/railway-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/sharkey-volume-entrypoint"]
